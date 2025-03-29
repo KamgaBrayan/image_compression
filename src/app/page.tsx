@@ -1,103 +1,153 @@
-import Image from "next/image";
+'use client';
+
+import React, { useState } from 'react';
+import DropZone from '@/components/DropZone';
+import ImagePreview from '@/components/ImagePreview';
+import CompressionStats from '@/components/CompressionStats';
+import DownloadSection from '@/components/DownloadSection';
+import { useImageStore } from '@/lib/store';
+import { compressImage, downloadAllAsZip } from '@/lib/imageCompression';
+import { downloadFile } from '@/lib/utils';
 
 export default function Home() {
+  const { images, options, updateImageStatus } = useImageStore();
+  const [isCompressing, setIsCompressing] = useState(false);
+  
+  const handleCompress = async (id: string) => {
+    const image = images.find((img) => img.id === id);
+    
+    if (!image) return;
+    
+    try {
+      updateImageStatus(id, 'compressing');
+      
+      const result = await compressImage(image.file, id, options);
+      
+      updateImageStatus(id, 'compressed', {
+        compressedUrl: result.compressedUrl,
+        compressedSize: result.compressedSize,
+        compressionRatio: result.compressionRatio,
+      });
+    } catch (error) {
+      updateImageStatus(id, 'error', {
+        error: error instanceof Error ? error.message : 'Une erreur est survenue',
+      });
+    }
+  };
+  
+  const handleCompressAll = async () => {
+    const pendingImages = images.filter((img) => img.status === 'idle');
+    
+    if (pendingImages.length === 0) return;
+    
+    setIsCompressing(true);
+    
+    try {
+      for (const image of pendingImages) {
+        await handleCompress(image.id);
+      }
+    } finally {
+      setIsCompressing(false);
+    }
+  };
+  
+  const handleDownloadAll = async () => {
+    const compressedImages = images.filter((img) => img.status === 'compressed');
+    
+    if (compressedImages.length <= 1) {
+      // If there's only one image, download it directly
+      const image = compressedImages[0];
+      if (image && image.compressedUrl) {
+        downloadFile(image.compressedUrl, `compressed-${image.name}`);
+      }
+      return;
+    }
+    
+    try {
+      // For multiple images, use the ZIP download
+      await downloadAllAsZip(
+        compressedImages.map((img) => ({
+          id: img.id,
+          compressedUrl: img.compressedUrl || '',
+          compressedSize: img.compressedSize || 0,
+          originalSize: img.size,
+          compressionRatio: img.compressionRatio || 0,
+        }))
+      );
+    } catch (error) {
+      console.error('Error downloading all images:', error);
+      alert('Erreur lors du téléchargement des images');
+    }
+  };
+  
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+      <div className="container mx-auto px-4 max-w-6xl">
+        <header className="mb-8 text-center">
+          <h1 className="text-3xl font-bold mb-2">Compression d'Images</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Compressez vos images sans perte de qualité visible
+          </p>
+        </header>
+        
+        <main>
+          <section className="mb-8">
+            <DropZone />
+          </section>
+          
+          {images.length > 0 && (
+            <>
+              <section className="mb-8">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold">
+                    Images ({images.length})
+                  </h2>
+                  
+                  {images.some((img) => img.status === 'idle') && (
+                    <button
+                      onClick={handleCompressAll}
+                      disabled={isCompressing}
+                      className={`
+                        px-4 py-2 rounded font-medium text-white transition-colors
+                        ${isCompressing
+                          ? 'bg-blue-400 cursor-not-allowed'
+                          : 'bg-blue-500 hover:bg-blue-600'
+                        }
+                      `}
+                    >
+                      {isCompressing ? 'Compression en cours...' : 'Tout compresser'}
+                    </button>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {images.map((image) => (
+                    <ImagePreview
+                      key={image.id}
+                      image={image}
+                      onCompress={handleCompress}
+                    />
+                  ))}
+                </div>
+              </section>
+              
+              <CompressionStats images={images} />
+              
+              <DownloadSection
+                images={images}
+                onDownloadAll={handleDownloadAll}
+              />
+            </>
+          )}
+        </main>
+        
+        <footer className="mt-12 text-center text-sm text-gray-500 dark:text-gray-400">
+          <p>© {new Date().getFullYear()} Compression d'Images</p>
+          <p className="mt-1">
+            Compressez vos images efficacement et sans perte de qualité visible
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }
