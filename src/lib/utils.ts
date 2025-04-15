@@ -98,7 +98,7 @@ export function downloadFile(url: string, fileName: string): void {
  * @param files Array of file URLs and names
  * @returns Promise that resolves to a Blob containing the ZIP file
  */
-export async function createZipFile(files: { url: string; name: string }[]): Promise<Blob> {
+export async function createZipFile(): Promise<Blob> {
   // This is a placeholder. In a real implementation, we would use a library like JSZip
   // Since we're using the server for compression, we'll implement this on the server side
   throw new Error('Not implemented');

@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const originalSize = buffer.byteLength;
     
     // Process the image with Sharp
-    let sharpInstance = sharp(Buffer.from(buffer));
+    const sharpInstance = sharp(Buffer.from(buffer));
     let outputFormat: string;
     
     // Determine the output format

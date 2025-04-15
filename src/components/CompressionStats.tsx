@@ -61,7 +61,7 @@ export default function CompressionStats({ images }: CompressionStatsProps) {
       
       <div className="mt-4 text-center">
         <p className="text-green-600 dark:text-green-400 font-medium">
-          Vous avez économisé {formatFileSize(stats.saved)} d'espace disque!
+          Vous avez économisé {formatFileSize(stats.saved)} d&apos;espace disque!
         </p>
       </div>
     </div>

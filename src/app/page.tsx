@@ -84,7 +84,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="container mx-auto px-4 max-w-6xl">
         <header className="mb-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">Compression d'Images</h1>
+          <h1 className="text-3xl font-bold mb-2">Compression d&apos;Images</h1>
           <p className="text-gray-600 dark:text-gray-400">
             Compressez vos images sans perte de qualité visible
           </p>
@@ -142,7 +142,7 @@ export default function Home() {
         </main>
         
         <footer className="mt-12 text-center text-sm text-gray-500 dark:text-gray-400">
-          <p>© {new Date().getFullYear()} Compression d'Images</p>
+          <p>© {new Date().getFullYear()} Compression d&apos;Images</p>
           <p className="mt-1">
             Compressez vos images efficacement et sans perte de qualité visible
           </p>

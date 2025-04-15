@@ -48,7 +48,8 @@ export async function compressImage(
 export async function compressMultipleImages(
   files: { file: File; id: string }[],
   options: CompressionOptions,
-  onProgress?: (id: string, status: 'compressing' | 'compressed' | 'error', data?: any) => void
+  onProgress?: (id: string, status: 'compressing' | 'compressed' | 'error', 
+                data?: CompressionResult | { error: string } | undefined ) => void
 ): Promise<CompressionResult[]> {
   const results: CompressionResult[] = [];
   

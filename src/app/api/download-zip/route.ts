@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import archiver from 'archiver';
-import { Readable } from 'stream';
-import { CompressionResult } from '@/types';
 
 interface ImageForZip {
   id: string;

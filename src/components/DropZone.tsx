@@ -4,7 +4,7 @@ import { useImageStore } from '../lib/store';
 import { isImageFile } from '../lib/utils';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+// const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
 export default function DropZone() {
   const addImages = useImageStore((state) => state.addImages);
